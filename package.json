@@ -1,0 +1,27 @@
+{
+  "name": "cemetery-passport",
+  "version": "1.0.0",
+  "description": "A web application for visualizing cemetery graves.",
+  "main": "backend/server.js",
+  "scripts": {
+    "install-backend": "cd backend && npm install",
+    "install-frontend": "echo No frontend dependencies to install (Leaflet is CDN)",
+    "install-all": "npm run install-backend && npm run install-frontend",
+    "start-backend": "cd backend && npm start",
+    "start-frontend": "start frontend/index.html || open frontend/index.html",
+    "start": "npm run start-backend ; npm run start-frontend",
+    "setup-db": "echo Please manually create your PostgreSQL database and run init.sql"
+  },
+  "keywords": [
+    "cemetery",
+    "passport",
+    "gis",
+    "leaflet",
+    "nodejs",
+    "express",
+    "postgresql",
+    "postgis"
+  ],
+  "author": "Petr Mikeska",
+  "license": "ISC"
+}

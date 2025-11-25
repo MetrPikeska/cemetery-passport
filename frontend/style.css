@@ -1,0 +1,123 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    overflow: hidden; /* Prevent scrollbars */
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Ensure body takes full viewport height */
+}
+
+header {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.5em;
+}
+
+#map-container {
+    flex-grow: 1; /* Allow map container to fill remaining vertical space */
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#map {
+    height: 100%;
+    width: 100%;
+}
+
+#detail-container {
+    display: flex;
+    min-height: 100vh;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    background-color: #fff;
+}
+
+#sidebar {
+    width: 300px;
+    padding: 20px;
+    background-color: #f8f8f8;
+    border-right: 1px solid #eee;
+    overflow-y: auto;
+}
+
+#sidebar h2, #sidebar h3 {
+    color: #0056b3;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 10px;
+    margin-top: 20px;
+    margin-bottom: 15px;
+}
+
+#sidebar p {
+    margin-bottom: 8px;
+}
+
+#sidebar strong {
+    color: #555;
+}
+
+#deceased-list, #photo-gallery {
+    margin-top: 10px;
+    padding-left: 20px;
+}
+
+#deceased-list li {
+    margin-bottom: 5px;
+}
+
+#photo-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+#photo-gallery img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+#map-and-details {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+#detail-map {
+    height: 400px; /* Fixed height for the map on detail page */
+    width: 100%;
+    border-bottom: 1px solid #eee;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #detail-container {
+        flex-direction: column;
+    }
+
+    #sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #eee;
+    }
+
+    #detail-map {
+        height: 300px; /* Smaller map on smaller screens */
+    }
+}
