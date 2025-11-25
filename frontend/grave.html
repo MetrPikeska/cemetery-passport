@@ -12,10 +12,26 @@
         <aside id="sidebar">
             <a href="index.html" class="back-link">< Back to Map</a>
             <h2>Grave Details</h2>
-            <p><strong>Section:</strong> <span id="grave-section"></span></p>
-            <p><strong>Grave Number:</strong> <span id="grave-number"></span></p>
-            <p><strong>Type:</strong> <span id="grave-type"></span></p>
-            <p><strong>Condition:</strong> <span id="grave-condition"></span></p>
+            <div id="grave-details-view">
+                <p><strong>Section:</strong> <span id="grave-section"></span></p>
+                <p><strong>Grave Number:</strong> <span id="grave-number"></span></p>
+                <p><strong>Type:</strong> <span id="grave-type"></span></p>
+                <p><strong>Condition:</strong> <span id="grave-condition"></span></p>
+                <button id="edit-grave-btn" class="action-btn">Edit Grave</button>
+            </div>
+
+            <div id="grave-details-edit" style="display:none;">
+                <label for="edit-section">Section:</label>
+                <input type="text" id="edit-section"><br>
+                <label for="edit-grave-number">Grave Number:</label>
+                <input type="text" id="edit-grave-number"><br>
+                <label for="edit-type">Type:</label>
+                <input type="text" id="edit-type"><br>
+                <label for="edit-condition">Condition:</label>
+                <input type="text" id="edit-condition"><br>
+                <button id="save-grave-btn" class="action-btn">Save Changes</button>
+                <button id="cancel-edit-btn" class="action-btn cancel-btn">Cancel</button>
+            </div>
             
             <h3>Deceased</h3>
             <ul id="deceased-list"></ul>
@@ -31,6 +47,7 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
         const API_URL = 'http://localhost:3000/api';
+        let currentGraveData = null; // Store current grave data for editing
 
         document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -41,77 +58,142 @@
                 return;
             }
 
-            try {
-                const response = await fetch(`${API_URL}/graves/${graveId}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const grave = await response.json();
-                
-                document.getElementById('grave-section').textContent = grave.section;
-                document.getElementById('grave-number').textContent = grave.grave_number;
-                document.getElementById('grave-type').textContent = grave.type;
-                document.getElementById('grave-condition').textContent = grave.condition;
+            // Function to load grave data
+            const loadGraveData = async () => {
+                try {
+                    const response = await fetch(`${API_URL}/graves/${graveId}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const grave = await response.json();
+                    currentGraveData = grave; // Store data
 
-                const deceasedList = document.getElementById('deceased-list');
-                if (grave.deceased && grave.deceased.length > 0) {
-                    grave.deceased.forEach(person => {
-                        const li = document.createElement('li');
-                        li.textContent = `${person.name} (${person.birth_year || '?'}-${person.death_year || '?'})`;
-                        deceasedList.appendChild(li);
-                    });
-                } else {
-                    deceasedList.innerHTML = '<li>No deceased recorded.</li>';
-                }
+                    document.getElementById('grave-section').textContent = grave.section;
+                    document.getElementById('grave-number').textContent = grave.grave_number;
+                    document.getElementById('grave-type').textContent = grave.type;
+                    document.getElementById('grave-condition').textContent = grave.condition;
 
-                const photoGallery = document.getElementById('photo-gallery');
-                if (grave.photos && grave.photos.length > 0) {
-                    grave.photos.forEach(photo => {
-                        const img = document.createElement('img');
-                        img.src = photo.url;
-                        img.alt = photo.description || `Photo of grave ${grave.grave_number}`;
-                        photoGallery.appendChild(img);
-                    });
-                } else {
-                    photoGallery.innerHTML = '<p>No photos available.</p>';
-                }
+                    // Populate edit fields
+                    document.getElementById('edit-section').value = grave.section;
+                    document.getElementById('edit-grave-number').value = grave.grave_number;
+                    document.getElementById('edit-type').value = grave.type;
+                    document.getElementById('edit-condition').value = grave.condition;
 
-                // Initialize detail map
-                const detailMap = L.map('detail-map').setView([0, 0], 1); // Default view, will be adjusted
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                }).addTo(detailMap);
+                    // Deceased List
+                    const deceasedList = document.getElementById('deceased-list');
+                    deceasedList.innerHTML = ''; // Clear previous
+                    if (grave.deceased && grave.deceased.length > 0) {
+                        grave.deceased.forEach(person => {
+                            const li = document.createElement('li');
+                            li.textContent = `${person.name} (${person.birth_year || '?'}-${person.death_year || '?'})`;
+                            deceasedList.appendChild(li);
+                        });
+                    } else {
+                        deceasedList.innerHTML = '<li>No deceased recorded.</li>';
+                    }
 
-                if (grave.geometry) {
-                    const graveGeoJson = {
-                        type: 'Feature',
-                        geometry: grave.geometry,
-                        properties: grave
-                    };
-                    const geoJsonLayer = L.geoJson(graveGeoJson, {
-                        style: function (feature) {
-                            return {
-                                fillColor: '#ff7800',
-                                color: '#ff7800',
-                                weight: 2,
-                                opacity: 1,
-                                fillOpacity: 0.7
-                            };
-                        },
-                        onEachFeature: function(feature, layer) {
-                            if (feature.properties && feature.properties.grave_number) {
-                                layer.bindTooltip(feature.properties.grave_number, { permanent: true, direction: 'center', className: 'grave-label' }).openTooltip();
-                            }
-                        }
+                    // Photo Gallery
+                    const photoGallery = document.getElementById('photo-gallery');
+                    photoGallery.innerHTML = ''; // Clear previous
+                    if (grave.photos && grave.photos.length > 0) {
+                        grave.photos.forEach(photo => {
+                            const img = document.createElement('img');
+                            img.src = photo.url;
+                            img.alt = photo.description || `Photo of grave ${grave.grave_number}`;
+                            photoGallery.appendChild(img);
+                        });
+                    } else {
+                        photoGallery.innerHTML = '<p>No photos available.</p>';
+                    }
+
+                    // Initialize/Update detail map
+                    const detailMap = L.map('detail-map').setView([0, 0], 1); // Default view, will be adjusted
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     }).addTo(detailMap);
 
-                    detailMap.fitBounds(geoJsonLayer.getBounds());
-                }
+                    if (grave.geometry) {
+                        const graveGeoJson = {
+                            type: 'Feature',
+                            geometry: grave.geometry,
+                            properties: grave
+                        };
+                        const geoJsonLayer = L.geoJson(graveGeoJson, {
+                            style: function (feature) {
+                                return {
+                                    fillColor: '#ff7800',
+                                    color: '#ff7800',
+                                    weight: 2,
+                                    opacity: 1,
+                                    fillOpacity: 0.7
+                                };
+                            },
+                            onEachFeature: function(feature, layer) {
+                                if (feature.properties && feature.properties.grave_number) {
+                                    layer.bindTooltip(feature.properties.grave_number, { permanent: true, direction: 'center', className: 'grave-label' }).openTooltip();
+                                }
+                            }
+                        }).addTo(detailMap);
 
-            } catch (error) {
-                console.error('Error fetching grave details:', error);
-                document.getElementById('detail-container').innerHTML = `<p>Error loading grave details: ${error.message}</p>`;
-            }
+                        detailMap.fitBounds(geoJsonLayer.getBounds());
+                    }
+                } catch (error) {
+                    console.error('Error fetching grave details:', error);
+                    document.getElementById('detail-container').innerHTML = `<p>Error loading grave details: ${error.message}</p>`;
+                }
+            };
+
+            // Initial load
+            await loadGraveData();
+
+            // Event Listeners for Edit/Save/Cancel
+            document.getElementById('edit-grave-btn').addEventListener('click', () => {
+                document.getElementById('grave-details-view').style.display = 'none';
+                document.getElementById('grave-details-edit').style.display = 'block';
+            });
+
+            document.getElementById('cancel-edit-btn').addEventListener('click', () => {
+                document.getElementById('grave-details-edit').style.display = 'none';
+                document.getElementById('grave-details-view').style.display = 'block';
+                // Reset edit fields to current grave data
+                document.getElementById('edit-section').value = currentGraveData.section;
+                document.getElementById('edit-grave-number').value = currentGraveData.grave_number;
+                document.getElementById('edit-type').value = currentGraveData.type;
+                document.getElementById('edit-condition').value = currentGraveData.condition;
+            });
+
+            document.getElementById('save-grave-btn').addEventListener('click', async () => {
+                const updatedGrave = {
+                    section: document.getElementById('edit-section').value,
+                    grave_number: document.getElementById('edit-grave-number').value,
+                    type: document.getElementById('edit-type').value,
+                    condition: document.getElementById('edit-condition').value,
+                    geom: currentGraveData.geometry // Geometry is not editable via frontend form
+                };
+
+                try {
+                    const response = await fetch(`${API_URL}/graves/${graveId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(updatedGrave)
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(`HTTP error! status: ${response.status} - ${errorData.error}`);
+                    }
+
+                    alert('Grave updated successfully!');
+                    document.getElementById('grave-details-edit').style.display = 'none';
+                    document.getElementById('grave-details-view').style.display = 'block';
+                    await loadGraveData(); // Reload data to show updated values
+                } catch (error) {
+                    console.error('Error saving grave:', error);
+                    alert(`Failed to save grave: ${error.message}`);
+                }
+            });
         });
     </script>
 </body>
