@@ -1,30 +1,6 @@
 -- Enable PostGIS (if not already enabled)
 CREATE EXTENSION IF NOT EXISTS postgis;
 
--- Drop all existing tables (CASCADE will drop dependent tables as well)
-DROP TABLE IF EXISTS photos CASCADE;
-DROP TABLE IF EXISTS deceased CASCADE;
-DROP TABLE IF EXISTS graves CASCADE;
--- Also drop tables from the previous complex schema if they were created and not explicitly dropped by `new_init.sql`
-DROP TABLE IF EXISTS change_log CASCADE;
-DROP TABLE IF EXISTS vegetation_inventory CASCADE;
-DROP TABLE IF EXISTS cemetery_infrastructure CASCADE;
-DROP TABLE IF EXISTS cadastral_parcels CASCADE;
-DROP TABLE IF EXISTS inspection_logs CASCADE;
-DROP TABLE IF EXISTS maintenance_records CASCADE;
-DROP TABLE IF EXISTS contract_history CASCADE;
-DROP TABLE IF EXISTS lease_contracts CASCADE;
-DROP TABLE IF EXISTS leaseholders CASCADE;
-DROP TABLE IF EXISTS interments CASCADE;
-DROP TABLE IF EXISTS persons CASCADE;
-DROP TABLE IF EXISTS ref_inspection_types CASCADE;
-DROP TABLE IF EXISTS ref_maintenance_types CASCADE;
-DROP TABLE IF EXISTS ref_leaseholder_types CASCADE;
-DROP TABLE IF EXISTS ref_cemetery_sections CASCADE;
-DROP TABLE IF EXISTS ref_grave_conditions CASCADE;
-DROP TABLE IF EXISTS ref_grave_types CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
-
 -- TABLE: graves (simplified to 6 attributes + id)
 CREATE TABLE graves (
     id SERIAL PRIMARY KEY,
