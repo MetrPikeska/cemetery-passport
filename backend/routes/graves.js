@@ -43,6 +43,19 @@ router.get('/', async (req, res) => {
 });
 
 // GET single grave including deceased and photos
+// GET distinct section names
+router.get('/sections', async (req, res) => {
+    console.log('[Graves Router] Fetching distinct section names...');
+    try {
+        const result = await pool.query('SELECT DISTINCT section FROM graves ORDER BY section');
+        res.json(result.rows.map(row => row.section));
+    } catch (err) {
+        console.error('Error fetching section names:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// GET single grave including deceased and photos
 router.get('/:id', async (req, res) => {
     const { id } = req.params;
     try {
